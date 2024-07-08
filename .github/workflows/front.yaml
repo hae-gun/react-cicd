@@ -1,34 +1,48 @@
-name: Node.js CI
+name: CI Pipeline
 
 on:
   push:
-    branches: [ "develop" ]
+    branches:
+      - develop
   pull_request:
-    branches: [ "develop" ]
+    branches:
+      - develop
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
-
     strategy:
       matrix:
-        node-version: [22.x]
-        # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
+        node-version: [16.x, 18.x, 22.x]  # 최신 Node.js 버전 포함
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3  # v3 버전으로 업데이트
+
       - name: Set up Node.js
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3  # v3 버전으로 업데이트
         with:
           node-version: ${{ matrix.node-version }}
+
+      - name: Upgrade npm
+        run: npm install -g npm@latest  # npm 최신 버전 설치
+
+      - name: Cache node modules
+        uses: actions/cache@v3  # v3 버전으로 업데이트
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
       - name: Install dependencies
         run: npm install
         working-directory: ./my-react-app
+
       - name: Run tests
         run: npm test
         working-directory: ./my-react-app
+
       - name: Build project
         run: npm run build
         working-directory: ./my-react-app
