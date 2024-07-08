@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [16.x, 18.x, 22.x]  # 최신 Node.js 버전 포함
+        node-version: [18.x, 22.x]  # 최신 Node.js 버전 포함
 
     steps:
       - name: Checkout code
