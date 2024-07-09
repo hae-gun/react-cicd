@@ -1,23 +1,28 @@
-name: Build and Push Docker image
+name: CI Pipeline
 
 on:
   push:
+    branches:
+      - develop
+  pull_request:
     branches:
       - develop
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [18.x, 22.x]  # 최신 Node.js 버전 포함
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v3  # v3 버전으로 업데이트
 
       - name: Set up Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v3  # v3 버전으로 업데이트
         with:
-          node-version: 22
-        working-directory: ./my-react-app
+          node-version: ${{ matrix.node-version }}
 
       - name: Log in to Docker Hub
         uses: docker/login-action@v2
