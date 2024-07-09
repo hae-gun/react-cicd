@@ -1,48 +1,37 @@
-name: CI Pipeline
+name: Build and Push Docker image
 
 on:
   push:
-    branches:
-      - develop
-  pull_request:
     branches:
       - develop
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [18.x, 22.x]  # 최신 Node.js 버전 포함
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3  # v3 버전으로 업데이트
+        uses: actions/checkout@v3
 
       - name: Set up Node.js
-        uses: actions/setup-node@v3  # v3 버전으로 업데이트
+        uses: actions/setup-node@v3
         with:
-          node-version: ${{ matrix.node-version }}
-
-      - name: Upgrade npm
-        run: npm install -g npm@latest  # npm 최신 버전 설치
-
-#      - name: Cache node modules
-#        uses: actions/cache@v3  # v3 버전으로 업데이트
-#        with:
-#          path: ~/.npm
-#          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-#          restore-keys: |
-#            ${{ runner.os }}-node-
-
-      - name: Install dependencies
-        run: npm install
+          node-version: 22
         working-directory: ./my-react-app
 
-      - name: Run tests
-        run: npm test
-        working-directory: ./my-react-app
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Build project
-        run: npm run build
+      - name: Build and tag Docker image
         working-directory: ./my-react-app
+        run: |
+          docker build -t my-react-app:latest .
+          docker tag my-react-app:latest ${{ secrets.DOCKER_USERNAME }}/my-react-app:latest
+
+      - name: Push Docker image
+        working-directory: ./my-react-app
+        run: |
+          docker push ${{ secrets.DOCKER_USERNAME }}/my-react-app:latest
